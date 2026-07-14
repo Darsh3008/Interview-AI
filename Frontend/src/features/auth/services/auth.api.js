@@ -1,63 +1,83 @@
+// src/api/auth.api.js
+
 import axios from "axios";
 
-
-
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL,
+  baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
+// Request Interceptor
+api.interceptors.request.use(
+  (config) => {
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response Interceptor
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error(
+      "API Error:",
+      error.response?.data?.message || error.message
+    );
+
+    return Promise.reject(error);
+  }
+);
+
+// ======================
 // Register
-export async function register({ username, email, password }) {
+// ======================
+export const register = async (userData) => {
   try {
-    const response = await api.post("/api/auth/register", {
-      username,
-      email,
-      password,
-    });
-
-    return response.data;
-  } catch (err) {
-    console.error("Register Error:", err.response?.data || err.message);
-    return null;
+    const { data } = await api.post("/api/auth/register", userData);
+    return data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
-}
+};
 
+// ======================
 // Login
-export async function login({ email, password }) {
+// ======================
+export const login = async (credentials) => {
   try {
-    const response = await api.post("/api/auth/login", {
-      email,
-      password,
-    });
-    console.log("Login Response:", response);
-    return response.data;
-  } catch (err) {
-    console.error("Login Error:", err.response?.data || err.message);
-    return null;
+    const { data } = await api.post("/api/auth/login", credentials);
+    return data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
-}
+};
 
+// ======================
 // Logout
-export async function logout() {
+// ======================
+export const logout = async () => {
   try {
-    const response = await api.get("/api/auth/logout");
-
-    return response.data;
-  } catch (err) {
-    console.error("Logout Error:", err.response?.data || err.message);
-    return null;
+    const { data } = await api.get("/api/auth/logout");
+    return data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
-}
+};
 
+// ======================
 // Get Current User
-export async function getMe() {
+// ======================
+export const getMe = async () => {
   try {
-    const response = await api.get("/api/auth/get-me");
-
-    return response.data;
-  } catch (err) {
-    console.error("Get Me Error:", err.response?.data || err.message);
-    return null;
+    const { data } = await api.get("/api/auth/get-me");
+    return data;
+  } catch (error) {
+    throw error.response?.data || error;
   }
-}
+};
+
+// Export Axios instance
+export default api;
